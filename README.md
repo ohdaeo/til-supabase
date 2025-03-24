@@ -1,132 +1,225 @@
-![supabase](https://noticon-static.tammolo.com/dgggcrkxq/image/upload/v1720579881/noticon/lxhyu7xo7ujsxvuxmiuc.png)
+<svg role="img" viewBox="0 0 24 24" width="100" xmlns="http://www.w3.org/2000/svg"><title>shadcn/ui</title><path d="M22.219 11.784 11.784 22.219c-.407.407-.407 1.068 0 1.476.407.407 1.068.407 1.476 0L23.695 13.26c.407-.408.407-1.069 0-1.476-.408-.407-1.069-.407-1.476 0ZM20.132.305.305 20.132c-.407.407-.407 1.068 0 1.476.408.407 1.069.407 1.476 0L21.608 1.781c.407-.407.407-1.068 0-1.476-.408-.407-1.069-.407-1.476 0Z"/></svg>
 
-# Supabase
+# shadcn ui
 
-## 프로젝트 생성
+[shadcn UI](https://ui.shadcn.com/)
+
+### 설치
 
 ```bash
-npx create-next-app@latest .
+
+npx shadcn@latest init
+
+Ok to proceed? (y)
+
+√ Which color would you like to use as the base color? » Neutral
+
+√ How would you like to proceed? » Use --legacy-peer-deps
+
+Success! Project initialization completed.
+You may now add components.
 ```
 
-## Git 셋팅
+[sass](https://nextjs.org/docs/app/building-your-application/styling/sass)
 
 ```bash
-git init
-git add README.md
-git commit -m "first commit"
-git branch -M main
-git remote add origin https://github.com/ohdaeo/til-supabase.git
+npm install --save-dev sass
 ```
 
-## Prettier
+#### 기본 예제
 
-```bash
-npm install --save-dev prettier eslint-config-prettier eslint-plugin-prettier
+1. 페이지 만들기
+
+- src\app\page.tsx
+
+```tsx
+import styles from "@/app/page.module.scss";
+
+function page() {
+  return (
+    <div className={styles.container}>
+      <div className={styles.container_onBoarding}>
+        <span className={styles.container_onBoarding_title}></span>
+        <div className={styles.container_onBoarding_steps}>
+          <span>1. Create a page</span>
+          <span>2. Add boards to page</span>
+        </div>
+        {/* 페이지 추가 버튼 */}
+      </div>
+    </div>
+  );
+}
+
+export default page;
 ```
 
-`.prettierrc 파일 생성`
+- src\app\page.module.scss
+
+  **주의사항**
+  Watching 꼭 클릭하기 ! !!
+
+2. 버튼 컴포넌트 설치하기
 
 ```bash
-{
-  "semi": true,
-  "singleQuote": false,
-  "tabWidth": 2,
-  "trailingComma": "es5",
-  "printWidth": 80,
-  "bracketSpacing": true,
-  "arrowParens": "always"
+npx shadcn@latest add button
+```
+
+- src\components\ui\button.tsx ⬅ 생성됨.
+
+```tsx
+<Button
+  variant={"outline"}
+  className="w-full bg-transparent text-orange-500 border-orange-400 hover:bg-orange-50 hover:text-orange-500"
+>
+  Add New page
+</Button>
+```
+
+3. 글꼴 설정하는 방법
+
+```tsx
+import type { Metadata } from "next";
+import { Roboto } from "next/font/google";
+import "./globals.css";
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
+
+export const metadata: Metadata = {
+  title: "Todo",
+  description: "Todo supbase",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ko">
+      <body className={`${roboto.variable} antialiased`}>{children}</body>
+    </html>
+  );
 }
 ```
 
-## Eslint
+4. globals.css 설정하기
 
-```bash
-npm install --save-dev eslint-plugin-prettier eslint-config-prettier
-```
+- src\app\globals.css
 
-`eslint.config.mjs` 에 rule 설정
-
-```bash
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-// Prettier 플러그인 추가
-import eslintPluginPrettier from "eslint-plugin-prettier";
-import eslintConfigPrettier from "eslint-config-prettier";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-  {
-    plugins: {
-      prettier: eslintPluginPrettier, //  Prettier 플러그인 추가
-    },
-    rules: {
-      ...eslintConfigPrettier.rules, //  Prettier와 충돌하는 ESLint 규칙 비활성화
-      "prettier/prettier": ["warn", { endOfLine: "auto" }], //  Prettier 스타일을 강제 적용 (오류 발생 시 ESLint에서 표시)
-      "@typescript-eslint/no-unused-vars": "warn", //  기존 TypeScript 규칙 유지
-      "@typescript-eslint/no-explicit-any": "off", //  any 타입 사용 허용
-    },
-  },
-];
-
-export default eslintConfig;
-
-```
-
-### VSCode 자동 포맷 설정 관리
-
-- .vscode 폴더 생성
-- .vscode\settings.json
-
-```bash
-
-{
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+```css
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    @apply bg-background text-foreground;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
   }
 }
 ```
 
-### tsconfig.json 설정
+#### 심화예제
+
+1. navigation 레이아웃
+
+- src\app : page 관련 사항
+- /src/components 폴더 활용
+- `/src/components/common/navigation/SideNavigation.tsx 파일 생성`
+- `/src/components/common/navigation/SideNavigation.module.scss 파일 생성`
+
+2. SideNavigation 작업
+   [lucide](https://lucide.dev/icons)
+
+- src\components\common\navigation\SideNavigation.tsx
+
+```tsx
+import styles from "@/components/common/navigation/SideNavigation.module.scss";
+import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
+
+const SideNavigation = () => {
+  return (
+    <div className={styles.container}>
+      {/* 검색창 */}
+      <div className={styles.container_search_searchBox}>
+        <Button variant={"outline"} size={"icon"}>
+          <Search className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default SideNavigation;
+```
+
+3. layout 배치
+
+- src\app\layout.tsx
+
+```tsx
+return (
+  <html lang="ko">
+    <body className={`${roboto.variable} antialiased`}>
+      <SideNavigation />
+      {children}
+    </body>
+  </html>
+);
+```
+
+4. shadcn input 배치
+   [shadcn input](https://ui.shadcn.com/docs/components/input)
 
 ```bash
+npx shadcn@latest add input
+```
 
-{
-  "compilerOptions": {
-    "noImplicitAny": true,
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
-}
+- src\components\common\navigation\SideNavigation.tsx
+
+```tsx
+import styles from "@/components/common/navigation/SideNavigation.module.scss";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+
+const SideNavigation = () => {
+  return (
+    <div className={styles.container}>
+      {/* 검색창 */}
+      <div className={styles.container_searchBox}>
+        <Input
+          type="text"
+          placeholder="검색어를 입력하세요"
+          className="focus-visible:right"
+        />
+        <Button variant={"outline"} size={"icon"}>
+          <Search className="w-4 h-4" />
+        </Button>
+      </div>
+      {/* page 추가 버튼 */}
+      <div className={styles.container_buttonBox}>
+        <Button
+          variant={"outline"}
+          className="w-full text-orange-500 border-orange-400 hover:bg-orange-50 hover:text-orange-500"
+        >
+          Add New Page
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default SideNavigation;
 ```
