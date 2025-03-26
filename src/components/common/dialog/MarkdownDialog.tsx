@@ -1,12 +1,15 @@
 "use client";
 
+import { useState } from "react";
+// SCSS
 import styles from "@/components/common/dialog/MarkdownDialog.module.scss";
-import { Button } from "@/components/ui/button";
 
-// Markdown Editor
+// Markdown
 import MDEditor from "@uiw/react-md-editor";
 
-// shadcn
+// shadcn/ui
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,18 +18,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
 import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@radix-ui/react-checkbox";
-import LabelCalendar from "../calendar/LabelCalendar";
-import { useState } from "react";
 import { toast } from "sonner";
+
+// 컴포넌트
+import LabelCalendar from "../calendar/LabelCalendar";
 import { createTodo } from "@/app/actions/todos-actions";
 
-const MarkdownDialog = () => {
-  // 에디터의 내용
-  const [content, setContent] = useState<string | undefined>("");
+function MarkdownDialog() {
+  // 다이얼로그 Props
+  const [open, setOpen] = useState<boolean>(false);
+
+  // 에디터의 제목/본문 내용
   const [title, setTitle] = useState<string | undefined>("");
+  const [content, setContent] = useState<string | undefined>("");
 
   // todo 작성
   const onSubmit = async () => {
@@ -40,7 +45,7 @@ const MarkdownDialog = () => {
 
     // 서버액션 실행하기
     const { data, error, status } = await createTodo({
-      content: content,
+      contents: content,
       title: title,
     });
 
@@ -56,26 +61,31 @@ const MarkdownDialog = () => {
       description: "Supabase에 글이 등록되었습니다.",
       duration: 3000,
     });
+
+    // 창닫기
+    setOpen(false);
+    setTitle("");
+    setContent("");
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <span className="w-full block text-center font-normal text-gray-400 hover:text-gray-500 cursor-pointer">
+        <span className="w-full justify-center flex font-normal text-gray-400 hover:text-gray-500 cursor-pointer">
           Add Content
         </span>
       </DialogTrigger>
       <DialogContent className="max-w-fit min-w-[600px]">
         <DialogHeader>
           <DialogTitle>
-            <div className={styles.dialog_titleBoc}>
+            <div className={styles.dialog_titleBox}>
               <Checkbox className="w-5 h-5" />
               <input
                 type="text"
-                placeholder=" Write a title for your board"
+                placeholder="Write a title for your board"
+                className={styles.dialog_titleBox_title}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className={styles.dialog_titleBox_title}
               />
             </div>
           </DialogTitle>
@@ -89,19 +99,18 @@ const MarkdownDialog = () => {
             <MDEditor height={"100%"} value={content} onChange={setContent} />
           </div>
         </DialogHeader>
-
         <DialogFooter>
           <div className={styles.dialog_buttonBox}>
             <Button
               variant={"ghost"}
-              className="font-normal text-gray-400 hover:text-gray-500 hover:bg-gray-50"
+              className="font-normal text-gray-400 hover:bg-gray-50 hover:text-gray-500"
             >
               Cancel
             </Button>
             <Button
-              variant={"ghost"}
-              onClick={onSubmit}
+              type="submit"
               className="font-normal border-orange-500 bg-orange-400 text-white hover:bg-orange-500 hover:text-white"
+              onClick={onSubmit}
             >
               Save
             </Button>
@@ -110,6 +119,6 @@ const MarkdownDialog = () => {
       </DialogContent>
     </Dialog>
   );
-};
+}
 
 export default MarkdownDialog;
