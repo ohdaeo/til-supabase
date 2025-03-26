@@ -20,10 +20,43 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import LabelCalendar from "../calendar/LabelCalendar";
 import { useState } from "react";
+import { toast } from "sonner";
+import { createTodo } from "@/app/actions/todos-actions";
 
 const MarkdownDialog = () => {
   // 에디터의 내용
   const [content, setContent] = useState<string | undefined>("");
+  const [title, setTitle] = useState<string | undefined>("");
+
+  // todo 작성
+  const onSubmit = async () => {
+    if (!title || !content) {
+      toast.error("입력항목을 확인해 주세요.", {
+        description: "제목과 내용을 입력해주세요.",
+        duration: 3000,
+      });
+      return;
+    }
+
+    // 서버액션 실행하기
+    const { data, error, status } = await createTodo({
+      content: content,
+      title: title,
+    });
+
+    if (error) {
+      toast.error("등록 실패.", {
+        description: `Error ${error.message}`,
+        duration: 3000,
+      });
+      return;
+    }
+
+    toast.success("성공하였습니다.", {
+      description: "Supabase에 글이 등록되었습니다.",
+      duration: 3000,
+    });
+  };
 
   return (
     <Dialog>
@@ -40,6 +73,8 @@ const MarkdownDialog = () => {
               <input
                 type="text"
                 placeholder=" Write a title for your board"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
                 className={styles.dialog_titleBox_title}
               />
             </div>
@@ -65,6 +100,7 @@ const MarkdownDialog = () => {
             </Button>
             <Button
               variant={"ghost"}
+              onClick={onSubmit}
               className="font-normal border-orange-500 bg-orange-400 text-white hover:bg-orange-500 hover:text-white"
             >
               Save
