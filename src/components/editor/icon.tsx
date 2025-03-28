@@ -440,5 +440,5 @@ export const Icon = {
   Quote,
   Code,
   Link,
-  AddPhoto,
+  // AddPhoto,
 };
