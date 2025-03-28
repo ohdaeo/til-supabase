@@ -14,7 +14,7 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   title: "Todo",
-  description: "Todo supbase",
+  description: "Todo Supabase",
 };
 
 export default function RootLayout({
@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`${roboto.variable} antialiased`}>
+      <body className={`${roboto.variable}  antialiased`}>
         <SideNavigation />
         {children}
         <Toaster />

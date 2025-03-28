@@ -1,14 +1,13 @@
 "use client";
-
 import styles from "@/app/page.module.scss";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { createTodo } from "./actions/todos-actions";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { createTodo } from "@/app/actions/todos-action";
 
 function Home() {
+  // 라우터 이동
   const router = useRouter();
-
   // create
   const onCreate = async () => {
     const { data, error, status } = await createTodo({
@@ -35,7 +34,6 @@ function Home() {
     // http://localhost:3000/create/ [data.id] 로 이동
     router.push(`/create/${data.id}`);
   };
-
   return (
     <div className={styles.container}>
       <div className={styles.container_onBoarding}>
@@ -47,8 +45,8 @@ function Home() {
         {/* 페이지 추가 버튼 */}
         <Button
           variant={"outline"}
-          onClick={onCreate}
           className="w-full bg-transparent text-orange-500 border-orange-400 hover:bg-orange-50 hover:text-orange-500"
+          onClick={onCreate}
         >
           Add New page
         </Button>

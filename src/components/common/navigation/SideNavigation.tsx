@@ -1,28 +1,37 @@
 "use client";
+import { useEffect, useState } from "react";
 
-import { createTodo, getTodos, TodosRow } from "@/app/actions/todos-actions";
+// actions
+import { createTodo, getTodos, TodosRow } from "@/app/actions/todos-action";
+
+// scss
 import styles from "@/components/common/navigation/SideNavigation.module.scss";
 
+// sahdcn/ui
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dot, Search } from "lucide-react";
-import { useRouter } from "next/navigation";
-
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useAtom } from "jotai";
+import { sidebarStateAtom } from "@/app/store";
 
-const SideNavigation = () => {
+function SideNavigation() {
+  // jotai 상태 사용하기
+  const [sidebarState, setSideState] = useAtom(sidebarStateAtom);
+  // 라우터 이동
   const router = useRouter();
-  const [todos, setTodos] = useState<TodosRow[] | null>([]);
 
-  //creat
-  const onCreat = async () => {
+  const [todos, setTodos] = useState<TodosRow[] | null>([]);
+  // create
+  const onCreate = async () => {
     const { data, error, status } = await createTodo({
       title: "",
       contents: JSON.stringify([]),
       start_date: new Date().toISOString(),
       end_date: new Date().toISOString(),
     });
+    // 에러 발생시
     if (error) {
       toast.error("데이터 추가 실패", {
         description: `데이터 추가에 실패하였습니다. ${error.message}`,
@@ -35,12 +44,12 @@ const SideNavigation = () => {
       description: "데이터 추가에 성공하였습니다",
       duration: 3000,
     });
-    console.log("회신 응답 ", data.id);
-    // 데이터 추가 성공시 할일 등록 창으로 이동
-    // 주소/creat/[data.id] 이동
+    console.log("등록된 id ", data.id);
+    // 데이터 추가 성공시 할일 등록창으로 이동시킴
+    // http://localhost:3000/create/ [data.id] 로 이동
+
     router.push(`/create/${data.id}`);
   };
-
   // read
   const fetchGetTodos = async () => {
     const { data, error, status } = await getTodos();
@@ -57,13 +66,19 @@ const SideNavigation = () => {
       description: "데이터조회에 성공하였습니다",
       duration: 3000,
     });
-
+    setSideState("default");
     setTodos(data);
   };
 
   useEffect(() => {
-    fetchGetTodos();
-  }, []);
+    if (sidebarState !== "default") {
+      fetchGetTodos();
+
+      if (sidebarState === "delete") {
+        router.push("/");
+      }
+    }
+  }, [sidebarState]);
 
   return (
     <div className={styles.container}>
@@ -71,7 +86,7 @@ const SideNavigation = () => {
       <div className={styles.container_searchBox}>
         <Input
           type="text"
-          placeholder="검색어를 입력하세요"
+          placeholder="검색어를 입력하세요."
           className="focus-visible:right"
         />
         <Button variant={"outline"} size={"icon"}>
@@ -82,24 +97,37 @@ const SideNavigation = () => {
       <div className={styles.container_buttonBox}>
         <Button
           variant={"outline"}
-          onClick={onCreat}
-          className="w-full text-orange-500 border-orange-400 hover:bg-orange-50 hover:text-orange-500"
+          className="text-orange-500 border-orange-400 hover:bg-orange-50 hover:text-orange-500"
+          onClick={onCreate}
         >
           Add New Page
         </Button>
+        <Button
+          variant={"outline"}
+          className="flex-1 text-orange-500 border-orange-400 hover:bg-orange-50 hover:text-orange-500"
+          onClick={() => {
+            router.push("/blog");
+          }}
+        >
+          Blog
+        </Button>
       </div>
-      {/* 추가항목 출력 영역 */}
+      {/* 추가 항목 출력 영역 */}
       <div className={styles.container_todos}>
-        <div className={styles.container_todos_label}>Your Todo</div>
+        <div className={styles.container_todos_label}>
+          {/* 로그아웃 버튼 배치 */}
+          {"홍길동"}님 Your Todo
+        </div>
         <div className={styles.container_todos_list}>
-          {todos?.map((item) => (
+          {todos!.map((item) => (
             <div
               key={item.id}
               className="flex items-center py-2 bg-[#f5f5f4] rounded-sm cursor-pointer"
+              onClick={() => router.push(`/create/${item.id}`)}
             >
               <Dot className="mr-1 text-green-400" />
               <span className="text-sm">
-                {item.title ? item.title : "No Tilte"}
+                {item.title ? item.title : "No Title"}
               </span>
             </div>
           ))}
@@ -107,6 +135,6 @@ const SideNavigation = () => {
       </div>
     </div>
   );
-};
+}
 
 export default SideNavigation;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // SCSS
 import styles from "@/components/common/dialog/MarkdownDialog.module.scss";
 
@@ -23,7 +23,7 @@ import { toast } from "sonner";
 
 // 컴포넌트
 import LabelCalendar from "../calendar/LabelCalendar";
-import { createTodo } from "@/app/actions/todos-actions";
+import { createTodo } from "@/app/actions/todos-action";
 
 // contents 배열에 대한 타입 정의
 interface BoardContent {
@@ -41,6 +41,10 @@ interface BasicBoardProps {
 }
 
 function MarkdownDialog({ item, updateContent }: BasicBoardProps) {
+  const [isCheckComplted, setIsCheckCompleted] = useState<boolean>(
+    item.isCompleted
+  );
+
   // 다이얼로그 Props
   const [open, setOpen] = useState<boolean>(false);
 
@@ -77,15 +81,18 @@ function MarkdownDialog({ item, updateContent }: BasicBoardProps) {
       endDate: endDate,
       title: title,
       content: content,
-      isCompleted: isCompleted,
+      isCompleted: isCheckComplted,
     };
     updateContent(tempContent);
-
     // 창닫기
     setOpen(false);
     // setTitle("");
     // setContent("");
   };
+
+  useEffect(() => {
+    setIsCheckCompleted(item.isCompleted);
+  }, [item]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -99,7 +106,13 @@ function MarkdownDialog({ item, updateContent }: BasicBoardProps) {
         <DialogHeader>
           <DialogTitle>
             <div className={styles.dialog_titleBox}>
-              <Checkbox className="w-5 h-5" />
+              <Checkbox
+                className="w-5 h-5"
+                checked={isCheckComplted}
+                onCheckedChange={() => {
+                  setIsCheckCompleted(!isCheckComplted);
+                }}
+              />
               <input
                 type="text"
                 placeholder="Write a title for your board"
