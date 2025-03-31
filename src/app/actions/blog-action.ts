@@ -2,12 +2,12 @@
 
 import { createServerSideClient } from "@/lib/supabase/server";
 import { Database } from "@/types/types_db";
-export type TodosRow = Database["public"]["Tables"]["blog"]["Row"];
-export type TodosRowInsert = Database["public"]["Tables"]["blog"]["Insert"];
-export type TodosRowUpdate = Database["public"]["Tables"]["blog"]["Update"];
+export type BlogsRow = Database["public"]["Tables"]["blog"]["Row"];
+export type BlogsRowInsert = Database["public"]["Tables"]["blog"]["Insert"];
+export type BlogsRowUpdate = Database["public"]["Tables"]["blog"]["Update"];
 
 // Create 기능
-export async function createBlog(blog: TodosRowInsert) {
+export async function createBlog(blog: BlogsRowInsert) {
   const supabase = await createServerSideClient();
   const { data, error, status } = await supabase
     .from("blog")
@@ -31,7 +31,7 @@ export async function getBlogs() {
     .select("*")
     .order("id", { ascending: false });
   return { data, error, status } as {
-    data: TodosRow[] | null;
+    data: BlogsRow[] | null;
     error: Error | null;
     status: number;
   };
@@ -46,7 +46,7 @@ export async function getBlogId(id: number) {
     .eq("id", id)
     .single();
   return { data, error, status } as {
-    data: TodosRow | null;
+    data: BlogsRow | null;
     error: Error | null;
     status: number;
   };
@@ -64,7 +64,7 @@ export async function updateBlogId(id: number, title: string, content: string) {
     .single();
 
   return { data, error, status } as {
-    data: TodosRow | null;
+    data: BlogsRow | null;
     error: Error | null;
     status: number;
   };
@@ -81,7 +81,7 @@ export async function updateTodoIdTitle(
   const supabase = await createServerSideClient();
 
   const { data, error, status } = await supabase
-    .from("todos")
+    .from("Blogs")
     .update({
       title: title,
       start_date: startDate?.toISOString(),
@@ -92,7 +92,7 @@ export async function updateTodoIdTitle(
     .single();
 
   return { data, error, status } as {
-    data: TodosRow | null;
+    data: BlogsRow | null;
     error: Error | null;
     status: number;
   };
