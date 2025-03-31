@@ -243,7 +243,7 @@ const EditEditor = ({ blog }: { blog: BlogsRow }) => {
         return true; // 계속 순회
       });
 
-      // 모든 이미지 삭제 완료 대기
+      // 모든 이미지 삭제 완료 대기.
       if (deletePromises.length > 0) {
         await Promise.all(deletePromises);
         console.log(`총 ${deletePromises.length}개의 이미지 삭제 완료`);
