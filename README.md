@@ -1,523 +1,241 @@
-# 사용자 구분 필드 구성
+![Zustand](https://www.nextree.io/content/images/2023/06/zustand-1.jpg)
 
-1. 각 테이블 컬럼 추가
-   ![Image](https://github.com/user-attachments/assets/085c5503-b886-4a9c-b772-232420bc2b23)
-   user_id(uuid), user_email(text) 추가
+# Zustand
 
-2. `npm run generate-types` 반드시 실행
-   src\types\types_db.ts 에서 테이블 확인하기
+[Zustand.docs](https://zustand.docs.pmnd.rs/getting-started/introduction)
+[Jotai vs Zustand](https://velog.io/@rinm/Jotai-Zustand)
 
-3. 액션 수정
+```bash
+# NPM
+npm install zustand
+npm install zustand--legacy-peer-deps
+# Or, use any package manager of your choice.
+```
 
-- src\app\actions\todos-action.ts
+## 기본설정
+
+1. 로그인 사용자 정보를 전역에 보관한다.
+2. src\app\store\useUserStore.ts
 
 ```ts
-"use server";
+import { create } from "zustand";
+
+interface UserState {
+  name: string;
+  email: string;
+  uid: string;
+  setUser: (name: string, email: string, uid: string) => void;
+}
+
+export const useUserStore = create<UserState>((set) => ({
+  name: "",
+  email: "",
+  uid: "",
+  setUser: (name, email, uid) => set({ name, email, uid }),
+}));
+```
+
+3. 정보 전달 하기
+
+- src\app\(with-side)\layout.tsx
+
+```tsx
+import SideNavigation from "@/components/common/navigation/SideNavigation";
+import { ReactNode } from "react";
+
+// Supabase Server Side Client
 import { createServerSideClient } from "@/lib/supabase/server";
-import { Database } from "@/types/types_db";
-export type TodosRow = Database["public"]["Tables"]["todos"]["Row"];
-export type TodosRowInsert = Database["public"]["Tables"]["todos"]["Insert"];
-export type TodosRowUpdate = Database["public"]["Tables"]["todos"]["Update"];
 
-// Create 기능
-export async function createTodo(todo: TodosRowInsert) {
+export default async function Layout({ children }: { children: ReactNode }) {
   const supabase = await createServerSideClient();
-
-  // 현재 로그인한 사용자 정보 가져오기
   const {
     data: { user },
-    error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
+  console.log(" session", user);
+  console.log("user_metadata", user?.user_metadata);
 
-  const { data, error, status } = await supabase
-    .from("todos")
-    .insert([
-      {
-        title: todo.title,
-        contents: todo.contents,
-        start_date: todo.start_date,
-        end_date: todo.end_date,
-        user_id: user.id, // 로그인 사용자 정보
-        user_email: user.email, // 로그인 사용자 정보
-      },
-    ])
-    .select()
-    .single();
-
-  return { data, error, status };
-}
-// Read 기능
-export async function getTodos() {
-  const supabase = await createServerSideClient();
-  // 현재 로그인한 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
-
-  const { data, error, status } = await supabase
-    .from("todos")
-    .select("*")
-    .eq("user_id", user.id) // 로그인 사용자 정보
-    .order("id", { ascending: false });
-  return { data, error, status } as {
-    data: TodosRow[] | null;
-    error: Error | null;
-    status: number;
-  };
-}
-
-// Read 기능 id 한개
-export async function getTodoId(id: number) {
-  const supabase = await createServerSideClient();
-
-  // 현재 로그인한 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
-
-  const { data, error, status } = await supabase
-    .from("todos")
-    .select()
-    .eq("user_id", user.id) // 로그인 사용자 정보
-    .eq("id", id)
-    .single();
-  return { data, error, status } as {
-    data: TodosRow | null;
-    error: Error | null;
-    status: number;
-  };
-}
-
-// Update 기능 id 한개
-export async function updateTodoId(id: number, contents: string) {
-  const supabase = await createServerSideClient();
-  // 현재 로그인한 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
-
-  const { data, error, status } = await supabase
-    .from("todos")
-    .update({ contents: contents })
-    .eq("user_id", user.id) // 로그인 사용자 정보
-    .eq("id", id)
-    .select()
-    .single();
-
-  return { data, error, status } as {
-    data: TodosRow | null;
-    error: Error | null;
-    status: number;
-  };
-}
-// Title 업데이트 함수
-
-// Update 기능 id 한개
-export async function updateTodoIdTitle(
-  id: number,
-  title: string,
-  startDate: Date | undefined,
-  endDate: Date | undefined
-) {
-  const supabase = await createServerSideClient();
-  // 현재 로그인한 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
-
-  const { data, error, status } = await supabase
-    .from("todos")
-    .update({
-      title: title,
-      start_date: startDate?.toISOString(),
-      end_date: endDate?.toISOString(),
-    })
-    .eq("user_id", user.id) // 로그인 사용자 정보
-    .eq("id", id)
-    .select()
-    .single();
-
-  return { data, error, status } as {
-    data: TodosRow | null;
-    error: Error | null;
-    status: number;
-  };
-}
-// Row 삭제 기능
-export async function deleteTodo(id: number) {
-  const supabase = await createServerSideClient();
-
-  // 현재 로그인한 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
-
-  const { error, status } = await supabase
-    .from("todos")
-    .delete()
-    .eq("user_id", user.id) // 로그인 사용자 정보
-    .eq("id", id);
-
-  return { error, status } as {
-    error: Error | null;
-    status: number;
-  };
+  return (
+    <>
+      <SideNavigation user={user} />
+      <div>{children}</div>
+    </>
+  );
 }
 ```
 
-- src\app\actions\blog-action.ts
+4. 정보 활용하기
 
-```ts
-"use server";
-import { createServerSideClient } from "@/lib/supabase/server";
-import { Database } from "@/types/types_db";
-export type BlogsRow = Database["public"]["Tables"]["blog"]["Row"];
-export type BlogsRowInsert = Database["public"]["Tables"]["blog"]["Insert"];
-export type BlogsRowUpdate = Database["public"]["Tables"]["blog"]["Update"];
+- src\components\common\navigation\SideNavigation.tsx
 
-// Create 기능
-export async function createBlog(blog: BlogsRowInsert) {
-  const supabase = await createServerSideClient();
-  // 현재 로그인한 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+```tsx
+"use client";
+import { useEffect, useState } from "react";
 
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
-  const { data, error, status } = await supabase
-    .from("blog")
-    .insert([
-      {
-        title: blog.title,
-        content: blog.content,
-        user_id: user.id,
-        user_email: user.email,
-      },
-    ])
-    .eq("user_id", user.id) // 로그인 사용자 정보
-    .select()
-    .single();
+// actions
+import { createTodo, getTodos, TodosRow } from "@/app/actions/todos-action";
 
-  return { data, error, status };
-}
-// Read 기능
-export async function getBlogs() {
-  const supabase = await createServerSideClient();
-  // 현재 로그인한 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+// scss
+import styles from "@/components/common/navigation/SideNavigation.module.scss";
 
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
+// sahdcn/ui
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dot, Search } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useAtom } from "jotai";
+import { sidebarStateAtom } from "@/app/store";
+import { signOut } from "@/lib/supabase/actions";
 
-  const { data, error, status } = await supabase
-    .from("blog")
-    .select("*")
-    .eq("user_id", user.id) // 로그인 사용자 정보
-    .order("id", { ascending: false });
+// zustand
+import { useUserStore } from "@/app/store/useUserStore";
+import { User } from "@supabase/supabase-js";
 
-  return { data, error, status } as {
-    data: BlogsRow[] | null;
-    error: Error | null;
-    status: number;
-  };
-}
+function SideNavigation({ user }: { user: User | null }) {
+  // console.log("SideNavigation : ", user);
+  const { name, email, setUser } = useUserStore();
 
-// Read 기능 id 한개
-export async function getBlogId(id: number) {
-  const supabase = await createServerSideClient();
-  // 현재 로그인한 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
-
-  const { data, error, status } = await supabase
-    .from("blog")
-    .select()
-    .eq("user_id", user.id) // 로그인 사용자 정보
-    .eq("id", id)
-    .single();
-  return { data, error, status } as {
-    data: BlogsRow | null;
-    error: Error | null;
-    status: number;
-  };
-}
-
-// Update 기능 id 한개
-export async function updateBlogId(id: number, title: string, content: string) {
-  const supabase = await createServerSideClient();
-  // 현재 로그인한 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
-
-  const { data, error, status } = await supabase
-    .from("blog")
-    .update({ content: content, title: title })
-    .eq("user_id", user.id) // 로그인 사용자 정보
-    .eq("id", id)
-    .select()
-    .single();
-
-  return { data, error, status } as {
-    data: BlogsRow | null;
-    error: Error | null;
-    status: number;
-  };
-}
-
-// Row 삭제 기능
-export async function deleteBlog(id: number) {
-  const supabase = await createServerSideClient();
-  // 현재 로그인한 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return {
-      data: null,
-      error: userError || new Error("User not authenticated"),
-      status: 401,
-    };
-  }
-
-  const { error, status } = await supabase
-    .from("blog")
-    .delete()
-    .eq("user_id", user.id) // 로그인 사용자 정보
-    .eq("id", id);
-
-  return { error, status } as {
-    error: Error | null;
-    status: number;
-  };
-}
-```
-
-- src\app\actions\blog-storage-action.ts
-
-```ts
-"use server";
-
-import { createServerSideClient } from "@/lib/supabase/server";
-
-// 에러 타입에 대해서 파악하기
-function handleError(error: unknown) {
-  if (error) {
-    console.error(error);
-    throw error;
-  }
-}
-
-// 파일 업로드
-export async function uploadFile(formData: FormData): Promise<{
-  id: string;
-  path: string;
-  fullPath: string;
-} | null> {
-  try {
-    const supabase = await createServerSideClient();
-    // getUser()를 사용하여 인증된 사용자 정보 가져오기
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      console.error("인증된 사용자가 아닙니다.");
-      return null;
+  // zusand 상태 업데이트
+  useEffect(() => {
+    if (user) {
+      setUser(user?.user_metadata.full_name, user.email!, user.id);
     }
+  }, []);
 
-    const file = formData.get("file") as File;
-    // 파일 이름에 사용자 ID를 포함시켜 고유성 보장
-    const fileExt = file.name.split(".").pop();
+  // jotai 상태 사용하기
+  const [sidebarState, setSideState] = useAtom(sidebarStateAtom);
+  // 라우터 이동
+  const router = useRouter();
 
-    // 인증 과정을 거치고 나면 사용자 ID 를 이용해서 파일을 생성한다.
-    const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-    // const fileName = `${"tester"}_${Date.now()}.${fileExt}`;
-
-    // upsert : insert 와 update 를 동시에 처리할 수 있는 옵션
-    const { data, error } = await supabase.storage
-      .from(process.env.NEXT_PUBLIC_STORAGE_BLOG_BUCKET as string)
-      .upload(fileName, file, { upsert: true });
-
+  const [todos, setTodos] = useState<TodosRow[] | null>([]);
+  // create
+  const onCreate = async () => {
+    const { data, error, status } = await createTodo({
+      title: "",
+      contents: JSON.stringify([]),
+      start_date: new Date().toISOString(),
+      end_date: new Date().toISOString(),
+    });
+    // 에러 발생시
     if (error) {
-      console.log("Error : ", error.message);
-      handleError(error);
-      return null; // 에러 발생 시 null 반환
+      toast.error("데이터 추가 실패", {
+        description: `데이터 추가에 실패하였습니다. ${error.message}`,
+        duration: 3000,
+      });
+      return;
     }
+    // 최종 데이터
+    toast.success("데이터 추가 성공", {
+      description: "데이터 추가에 성공하였습니다",
+      duration: 3000,
+    });
+    console.log("등록된 id ", data.id);
+    // 데이터 추가 성공시 할일 등록창으로 이동시킴
+    // http://localhost:3000/create/ [data.id] 로 이동
 
-    return data;
-  } catch (error) {
-    handleError(error);
-    return null;
-  }
+    router.push(`/create/${data.id}`);
+  };
+  // read
+  const fetchGetTodos = async () => {
+    const { data, error, status } = await getTodos();
+    // 에러 발생시
+    if (error) {
+      toast.error("데이터조회실패", {
+        description: `데이터조회에 실패하였습니다. ${error.message}`,
+        duration: 3000,
+      });
+      return;
+    }
+    // 최종 데이터
+    toast.success("데이터 조회 성공", {
+      description: "데이터조회에 성공하였습니다",
+      duration: 3000,
+    });
+    setSideState("default");
+    setTodos(data);
+  };
+
+  useEffect(() => {
+    if (sidebarState !== "default") {
+      fetchGetTodos();
+
+      if (sidebarState === "delete") {
+        router.push("/");
+      }
+    }
+  }, [sidebarState]);
+
+  const fetchSignOut = async () => {
+    await signOut();
+    router.push("/");
+  };
+
+  return (
+    <div className={styles.container}>
+      {/* 검색창 */}
+      <div className={styles.container_searchBox}>
+        <Input
+          type="text"
+          placeholder="검색어를 입력하세요."
+          className="focus-visible:right"
+        />
+        <Button variant={"outline"} size={"icon"}>
+          <Search className="w-4 h-4" />
+        </Button>
+      </div>
+      {/* page 추가 버튼 */}
+      <div className={styles.container_buttonBox}>
+        <Button
+          variant={"outline"}
+          className="text-orange-500 border-orange-400 hover:bg-orange-50 hover:text-orange-500"
+          onClick={onCreate}
+        >
+          Add New Page
+        </Button>
+        <Button
+          variant={"outline"}
+          className="flex-1 text-orange-500 border-orange-400 hover:bg-orange-50 hover:text-orange-500"
+          onClick={() => router.push("/blog")}
+        >
+          Blog
+        </Button>
+      </div>
+      {/* 추가 항목 출력 영역 */}
+      <div className={styles.container_todos}>
+        <div className={styles.container_todos_label}>
+          {/* 로그아웃 버튼 배치 */}
+          {name}님 Your Todo {email}
+        </div>
+
+        <div>
+          <button
+            className="border rounded px-2.5 py-2"
+            type="submit"
+            onClick={fetchSignOut}
+          >
+            Sign Out
+          </button>
+        </div>
+
+        <div className={styles.container_todos_list}>
+          {todos!.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center py-2 bg-[#f5f5f4] rounded-sm cursor-pointer"
+              onClick={() => router.push(`/create/${item.id}`)}
+            >
+              <Dot className="mr-1 text-green-400" />
+              <span className="text-sm">
+                {item.title ? item.title : "No Title"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
-// supabas에서 파일 삭제
-export async function deleteFile(fileName: string) {
-  const supabase = await createServerSideClient();
-
-  // getUser()를 사용하여 인증된 사용자 정보 가져오기
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    console.error("인증된 사용자가 아닙니다.");
-    return null;
-  }
-
-  // 파일 삭제시 파일명을 배열에 요소로 추가해서 삭제한다.
-  const { data, error } = await supabase.storage
-    .from(process.env.NEXT_PUBLIC_STORAGE_BLOG_BUCKET as string)
-    .remove([fileName]);
-
-  handleError(error);
-
-  return data;
-}
-```
-
-- [JavaScript Client Library](https://supabase.com/docs/reference/javascript/auth-signinwithpassword)
-
-- RLS 정책을 설정하기 (SQL 에디터 설정 -blog-data)
-
-```sql
--- ✅ RLS 활성화
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-
--- ✅ SELECT
-CREATE POLICY "Authenticated users can read blog-data"
-  ON storage.objects
-  FOR SELECT
-  TO authenticated
-  USING (
-    auth.uid() IS NOT NULL AND
-    bucket_id = 'blog-data'
-  );
-
--- ✅ INSERT (※ WITH CHECK만 사용)
-CREATE POLICY "Authenticated users can upload to blog-data"
-  ON storage.objects
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    auth.uid() IS NOT NULL AND
-    bucket_id = 'blog-data'
-  );
-
--- ✅ UPDATE
-CREATE POLICY "Authenticated users can update blog-data"
-  ON storage.objects
-  FOR UPDATE
-  TO authenticated
-  USING (
-    auth.uid() IS NOT NULL AND
-    bucket_id = 'blog-data'
-  )
-  WITH CHECK (
-    auth.uid() IS NOT NULL AND
-    bucket_id = 'blog-data'
-  );
-
--- ✅ DELETE
-CREATE POLICY "Authenticated users can delete blog-data"
-  ON storage.objects
-  FOR DELETE
-  TO authenticated
-  USING (
-    auth.uid() IS NOT NULL AND
-    bucket_id = 'blog-data'
-  );
-
+export default SideNavigation;
 ```
