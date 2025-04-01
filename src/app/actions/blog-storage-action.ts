@@ -19,24 +19,23 @@ export async function uploadFile(formData: FormData): Promise<{
   try {
     const supabase = await createServerSideClient();
     // getUser()를 사용하여 인증된 사용자 정보 가져오기
-    // const {
-    //   data: { user },
-    //   error: userError,
-    // } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    // if (userError || !user) {
-    //   console.error("인증된 사용자가 아닙니다.");
-    //   return null;
-    // }
+    if (userError || !user) {
+      console.error("인증된 사용자가 아닙니다.");
+      return null;
+    }
 
     const file = formData.get("file") as File;
-
     // 파일 이름에 사용자 ID를 포함시켜 고유성 보장
     const fileExt = file.name.split(".").pop();
 
-    // 인증과정을 거치고 나면 사용자 ID를 이용해서 파일을 생성한다.
-    // const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-    const fileName = `${"tester"}_${Date.now()}.${fileExt}`;
+    // 인증 과정을 거치고 나면 사용자 ID 를 이용해서 파일을 생성한다.
+    const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+    // const fileName = `${"tester"}_${Date.now()}.${fileExt}`;
 
     // upsert : insert 와 update 를 동시에 처리할 수 있는 옵션
     const { data, error } = await supabase.storage
@@ -44,6 +43,7 @@ export async function uploadFile(formData: FormData): Promise<{
       .upload(fileName, file, { upsert: true });
 
     if (error) {
+      console.log("Error : ", error.message);
       handleError(error);
       return null; // 에러 발생 시 null 반환
     }
@@ -55,11 +55,22 @@ export async function uploadFile(formData: FormData): Promise<{
   }
 }
 
-//supbase에서 파일 삭제하기
+// supabas에서 파일 삭제
 export async function deleteFile(fileName: string) {
   const supabase = await createServerSideClient();
 
-  // 파일 삭제시 파일명을 배열에 요소로 추가 한 후 삭제한다
+  // getUser()를 사용하여 인증된 사용자 정보 가져오기
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    console.error("인증된 사용자가 아닙니다.");
+    return null;
+  }
+
+  // 파일 삭제시 파일명을 배열에 요소로 추가해서 삭제한다.
   const { data, error } = await supabase.storage
     .from(process.env.NEXT_PUBLIC_STORAGE_BLOG_BUCKET as string)
     .remove([fileName]);
