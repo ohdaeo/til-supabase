@@ -23,6 +23,8 @@ import Image from "next/image";
 import { ChevronLeftIcon } from "lucide-react";
 import { useAtom } from "jotai";
 import { sidebarStateAtom } from "@/app/store";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/providers/ReactQueryProvider";
 
 // contents 배열에 대한 타입 정의
 interface BoardContent {
@@ -49,28 +51,45 @@ function Page() {
   const [completeCount, setCompleteCount] = useState<number>(0);
   const [totalCount, setTotalCount] = useState<number>(0);
 
+  // id 에 해당하는 Row 데이터를 읽어오기
+  const {
+    error,
+    data: queryData,
+    isSuccess,
+  } = useQuery({
+    queryKey: ["todos"],
+    queryFn: () => getTodoId(Number(id)),
+  });
+
   // Page 삭제 함수
-  const handleDeleteBoard = async () => {
-    // console.log(id, "제거하라");
-    const { error, status } = await deleteTodo(Number(id));
-    if (!error) {
+  const deleteBoardMutaion = useMutation({
+    mutationFn: () => {
+      return deleteTodo(Number(id));
+    },
+    onSuccess: () => {
       setSideState("delete");
-    }
-  };
+    },
+    onError: (error) => {
+      console.log(error.message);
+    },
+  });
 
   // 타이틀 저장 함수
-  const handleSaveTitle = async () => {
-    const { data, error, status } = await updateTodoIdTitle(
-      Number(id),
-      title,
-      startDate,
-      endDate
-    );
+  const saveTitleMuation = useMutation({
+    mutationFn: () => {
+      return updateTodoIdTitle(Number(id), title, startDate, endDate);
+    },
+    onSuccess: () => {
+      // jotai의 State 갱신
+      setSideState("titleChange");
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
 
-    // jotai의 State 갱신
-    setSideState("titleChange");
-  };
   // 컨텐츠 삭제 함수
+  const deleteContentMutaion = useMutation({});
   const deleteContent = async (deleteBoardId: string) => {
     // console.log("삭제할 컨텐츠 boardId ", deleteBoardId);
     const tempConentArr = contents.filter(
@@ -82,10 +101,12 @@ function Page() {
       JSON.stringify(tempConentArr)
     );
 
-    fetchGetTodoId();
+    // fetchGetTodoId();
+    queryClient.refetchQueries({ queryKey: ["todos"] });
   };
 
   // 컨텐츠 데이터 업데이트 함수
+  const updateContentMutaion = useMutation({});
   const updateContent = async (newData: BoardContent) => {
     // console.log("최종전달 ", newData);
 
@@ -101,34 +122,10 @@ function Page() {
       JSON.stringify(newContentArr)
     );
 
-    fetchGetTodoId();
+    // fetchGetTodoId();
+    queryClient.refetchQueries({ queryKey: ["todos"] });
   };
 
-  // id 에 해당하는 Row 데이터를 읽어오기
-  const fetchGetTodoId = async () => {
-    const { data, error, status } = await getTodoId(Number(id));
-    // 에러 발생시
-    if (error) {
-      toast.error("데이터 호출 실패", {
-        description: `데이터 호출에 실패하였습니다. ${error.message}`,
-        duration: 3000,
-      });
-      return;
-    }
-    // 최종 데이터
-    toast.success("데이터 호출 성공", {
-      description: "데이터 호출에 성공하였습니다",
-      duration: 3000,
-    });
-
-    setTitle(data?.title ? data.title : "");
-    setStarDate(data?.start_date ? new Date(data.start_date) : new Date());
-    setEndDate(data?.end_date ? new Date(data.end_date) : new Date());
-    const temp = data?.contents ? JSON.parse(data.contents as string) : [];
-    setContents(temp);
-    // 목록 갱신시
-    calcCompletedCount(temp);
-  };
   // contents 의 isCompleted 가 true 인 갯수 파악하기
   const calcCompletedCount = (gogo: BoardContent[]) => {
     const arr = gogo.filter((item) => item.isCompleted === true);
@@ -147,6 +144,7 @@ function Page() {
     isCompleted: false,
   };
 
+  const onCreateContentMutaion = useMutation({});
   const onCreateContent = async (newData: BoardContent) => {
     const addContent = newData;
     // 기본으로 추가될 내용
@@ -174,14 +172,49 @@ function Page() {
     });
 
     // 자료 새로 후출
-    fetchGetTodoId();
+    // fetchGetTodoId();
+    queryClient.refetchQueries({ queryKey: ["todos"] });
   };
+
+  if (error) {
+    toast.error("데이터 호출 실패", {
+      description: `데이터 호출에 실패하였습니다. ${error.message}`,
+      duration: 3000,
+    });
+
+    return <div>데이터 호출에 실패하였습니다.</div>;
+  }
+
+  if (queryData) {
+    // 최종 데이터
+    toast.success("데이터 호출 성공", {
+      description: "데이터 호출에 성공하였습니다",
+      duration: 3000,
+    });
+  }
 
   useEffect(() => {
     // jotai의 State 갱신
     setSideState("add Page");
-    fetchGetTodoId();
-  }, []);
+    if (queryData) {
+      setTitle(queryData.data?.title ? queryData.data.title : "");
+      setStarDate(
+        queryData.data?.start_date
+          ? new Date(queryData.data.start_date)
+          : new Date()
+      );
+      setEndDate(
+        queryData.data?.end_date
+          ? new Date(queryData.data.end_date)
+          : new Date()
+      );
+      const temp = queryData.data?.contents
+        ? JSON.parse(queryData.data.contents as string)
+        : [];
+      setContents(temp);
+      calcCompletedCount(temp);
+    }
+  }, [queryData]);
 
   return (
     <div className={styles.container}>
@@ -193,11 +226,19 @@ function Page() {
           </Button>
         </div>
         <div className="flex gap-2">
-          <Button variant={"outline"} onClick={handleSaveTitle}>
-            저장
+          <Button
+            variant={"outline"}
+            disabled={saveTitleMuation.isPending}
+            onClick={() => saveTitleMuation.mutate()}
+          >
+            {saveTitleMuation.isPending ? "저장중 ..." : "저장"}
           </Button>
-          <Button variant={"outline"} onClick={handleDeleteBoard}>
-            삭제
+          <Button
+            variant={"outline"}
+            disabled={deleteBoardMutaion.isPending}
+            onClick={() => deleteBoardMutaion.mutate()}
+          >
+            {deleteBoardMutaion.isPending ? "삭제중..." : "삭제"}
           </Button>
         </div>
       </div>
