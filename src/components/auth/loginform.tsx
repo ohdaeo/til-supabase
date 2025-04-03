@@ -166,27 +166,24 @@ export function LoginForm() {
             </span>
           </div>
         </div>
-        <form action={signInWithGoogle} className="w-full">
-          <Button
-            variant="outline"
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
-            Google로 계속하기
-          </Button>
-        </form>
-
-        <form action={signInWithKakao} className="w-full">
-          <Button
-            variant="outline"
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
-            Kakao로 계속하기
-          </Button>
-        </form>
+        <Button
+          variant="outline"
+          type="button"
+          className="w-full"
+          onClick={handleGoogleLogin}
+          disabled={isLoading}
+        >
+          Google로 계속하기
+        </Button>
+        <Button
+          variant="outline"
+          type="button"
+          className="w-full"
+          onClick={handleKakaoLogin}
+          disabled={isLoading}
+        >
+          Kakao로 계속하기
+        </Button>
         <div className="text-center text-sm text-muted-foreground">
           계정이 없으신가요?{" "}
           <Button
