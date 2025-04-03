@@ -56,7 +56,7 @@ _next-15 깃허브 (deploy) 부분 참고하기_
 
 [Search Advisor](https://searchadvisor.naver.com/)
 
-- src\app\(with-side)\layout.tsx
+- src\app\layout.tsx
 
 ```tsx
 export const metadata: Metadata = {
