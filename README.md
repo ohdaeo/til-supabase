@@ -60,15 +60,50 @@ _next-15 깃허브 (deploy) 부분 참고하기_
 
 ```tsx
 export const metadata: Metadata = {
-  title: "Blog",
-  description: "Blog Supabase",
+  title: "Todo",
+  description: "Todo Supabase",
   openGraph: {
-    title: "Blog",
-    description: "Blog Supabase",
+    title: "Todo",
+    description: "Todo Supabase",
     images: [{ url: "/thumbnail.png" }],
   },
   other: {
-    "naver-site-verification": "fbe25f61699068bf21f52c481fe3ad7a14f03747",
+    "naver-site-verification": "19f2bd8a123ea45b6f67c018910c8123b3a18dc45",
   },
 };
+```
+
+- public\robots.txt
+
+```txt
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://til-supabase-omega.vercel.app
+
+# Sitemaps
+Sitemap: https://til-supabase-omega.vercel.app/sitemap.xml
+
+```
+
+- public\sitemap.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://til-supabase-omega.vercel.app">
+<sitemap><loc>https://til-supabase-omega.vercel.app/sitemap-0.xml</loc></sitemap>
+</sitemapindex>
+```
+
+- public\sitemap-0.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+<url><loc>https://til-supabase-omega.vercel.app</loc><lastmod>2023-09-11T23:52:17.732Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://til-supabase-omega.vercel.app/blog</loc><lastmod>2023-09-11T23:52:17.732Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://til-supabase-omega.vercel.app/todos</loc><lastmod>2023-09-11T23:52:17.732Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+</urlset>
 ```
