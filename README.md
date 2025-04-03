@@ -107,3 +107,9 @@ Sitemap: https://til-supabase-omega.vercel.app/sitemap.xml
 <url><loc>https://til-supabase-omega.vercel.app/todos</loc><lastmod>2023-09-11T23:52:17.732Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 </urlset>
 ```
+
+## 구글 검색 엔진 등록하기
+
+[google search-console](https://search.google.com/search-console/about)
+
+- public\google48ff0047aa45c5d9.html
