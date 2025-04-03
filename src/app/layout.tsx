@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
-import SideNavigation from "@/components/common/navigation/SideNavigation";
 
 // shadcn/ui
 import { Toaster } from "@/components/ui/sonner";
@@ -16,6 +15,11 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "Todo",
   description: "Todo Supabase",
+  openGraph: {
+    title: "Todo",
+    description: "Todo Supabase",
+    images: [{ url: "/thumbnail.png" }],
+  },
 };
 
 export default function RootLayout({
