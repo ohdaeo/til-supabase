@@ -176,23 +176,6 @@ function Page() {
     queryClient.refetchQueries({ queryKey: ["todos"] });
   };
 
-  if (error) {
-    toast.error("데이터 호출 실패", {
-      description: `데이터 호출에 실패하였습니다. ${error.message}`,
-      duration: 3000,
-    });
-
-    return <div>데이터 호출에 실패하였습니다.</div>;
-  }
-
-  if (queryData) {
-    // 최종 데이터
-    toast.success("데이터 호출 성공", {
-      description: "데이터 호출에 성공하였습니다",
-      duration: 3000,
-    });
-  }
-
   useEffect(() => {
     // jotai의 State 갱신
     setSideState("add Page");
@@ -215,6 +198,23 @@ function Page() {
       calcCompletedCount(temp);
     }
   }, [queryData]);
+
+  if (queryData) {
+    // 최종 데이터
+    toast.success("데이터 호출 성공", {
+      description: "데이터 호출에 성공하였습니다",
+      duration: 3000,
+    });
+  }
+
+  if (error) {
+    toast.error("데이터 호출 실패", {
+      description: `데이터 호출에 실패하였습니다. ${error.message}`,
+      duration: 3000,
+    });
+
+    return <div>데이터 호출에 실패하였습니다.</div>;
+  }
 
   return (
     <div className={styles.container}>
