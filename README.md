@@ -51,3 +51,24 @@ _next-15 깃허브 (deploy) 부분 참고하기_
 **주의사항**
 
 1. 환경변수 세팅하기
+
+## 네이버 서치 어드바이저 등록하기
+
+[Search Advisor](https://searchadvisor.naver.com/)
+
+- src\app\(with-side)\layout.tsx
+
+```tsx
+export const metadata: Metadata = {
+  title: "Blog",
+  description: "Blog Supabase",
+  openGraph: {
+    title: "Blog",
+    description: "Blog Supabase",
+    images: [{ url: "/thumbnail.png" }],
+  },
+  other: {
+    "naver-site-verification": "fbe25f61699068bf21f52c481fe3ad7a14f03747",
+  },
+};
+```
