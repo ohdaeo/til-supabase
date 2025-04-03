@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     images: [{ url: "/thumbnail.png" }],
   },
   other: {
-    "naver-site-verification": "fbe25f61699068bf21f52c481fe3ad7a14f03747",
+    "naver-site-verification": "19f2bd8a317ea75b6f21c013056c817b3a18dc86",
   },
 };
 
