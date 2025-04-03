@@ -46,4 +46,8 @@ export const metadata: Metadata = {
 
 _next-15 깃허브 (deploy) 부분 참고하기_
 
-## Vercel
+## Vercel Deoploy
+
+**주의사항**
+
+1. 환경변수 세팅하기
