@@ -113,3 +113,12 @@ Sitemap: https://til-supabase-omega.vercel.app/sitemap.xml
 [google search-console](https://search.google.com/search-console/about)
 
 - public\google48ff0047aa45c5d9.html
+
+- src\app\layout.tsx
+
+```tsx
+other: {
+    "naver-site-verification": "19f2bd8a317ea75b6f21c013056c817b3a18dc86",
+    "google-site-verification": "Of5oAjxfTAPJP3XewbIBdKzIgAqOtwLTr5XcJrJUz60",
+  },
+```
